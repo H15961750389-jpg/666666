@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>俄罗斯方块在线对战</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            color: #ffd700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary {
+            background: #4ecdc4;
+        }
+
+        .btn-primary:hover {
+            background: #45b7aa;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        .game-area {
+            display: flex;
+            gap: 30px;
+        }
+
+        .game-board {
+            width: 300px;
+            height: 600px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #fff;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .opponents {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .opponent {
+            width: 200px;
+            height: 250px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            padding: 10px;
+            position: relative;
+        }
+
+        .opponent h4 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .opponent-board {
+            width: 100%;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .panel h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel h3 i {
+            font-size: 18px;
+        }
+
+        .player-list {
+            list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .player-list li {
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .player-list li .score {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .message .user {
+            color: #ffd700;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .chat-input input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .game-info {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            backdrop-filter: blur(5px);
+        }
+
+        .info-panel h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .level {
+            font-size: 20px;
+            color: #ff6b6b;
+        }
+
+        .lines {
+            font-size: 18px;
+            color: #4ecdc4;
+        }
+
+        .next-piece {
+            width: 120px;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            margin: 10px auto;
+            position: relative;
+        }
+
+        .game-over, .start-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 100;
+            width: 80%;
+        }
+
+        .start-screen {
+            display: block;
+        }
+
+        .game-over {
+            display: none;
+        }
+
+        .game-over h2, .start-screen h1 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .block {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .block.I { background: #00f5ff; }
+        .block.O { background: #ffff00; }
+        .block.T { background: #800080; }
+        .block.S { background: #00ff00; }
+        .block.Z { background: #ff0000; }
+        .block.J { background: #0000ff; }
+        .block.L { background: #ffa500; }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #ffd700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        @media (max-width: 1000px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .opponents {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-gamepad"></i>
+                <span>俄罗斯方块在线对战</span>
+            </div>
+            <div class="user-info">
+                <button class="btn" id="leaderboardBtn"><i class="fas fa-trophy"></i> 排行榜</button>
+                <button class="btn" id="settingsBtn"><i class="fas fa-cog"></i> 设置</button>
+                <span id="username">未登录</span>
+                <button class="btn btn-primary" id="loginBtn">登录/注册</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="game-area">
+                <div class="game-board" id="gameBoard">
+                    <div class="start-screen" id="startScreen">
+                        <h1>俄罗斯方块在线对战</h1>
+                        <p>与全球玩家实时对战，展示你的技巧！</p>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="startGame()"><i class="fas fa-play"></i> 开始游戏</button>
+                            <button class="btn" onclick="showCreateRoom()"><i class="fas fa-plus"></i> 创建房间</button>
+                            <button class="btn" onclick="showJoinRoom()"><i class="fas fa-door-open"></i> 加入房间</button>
+                        </div>
+                    </div>
+                    
+                    <div class="game-over" id="gameOver">
+                        <h2>游戏结束</h2>
+                        <p>最终得分: <span id="finalScore">0</span></p>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="restartGame()"><i class="fas fa-redo"></i> 重新开始</button>
+                            <button class="btn" onclick="exitToMenu()"><i class="fas fa-home"></i> 返回菜单</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="opponents" id="opponentsArea">
+                    <div class="opponent">
+                        <h4>玩家2</h4>
+                        <div class="opponent-board" id="opponent1"></div>
+                    </div>
+                    <div class="opponent">
+                        <h4>玩家3</h4>
+                        <div class="opponent-board" id="opponent2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="panel">
+                    <h3><i class="fas fa-users"></i> 在线玩家 (24)</h3>
+                    <ul class="player-list">
+                        <li>玩家1 <span class="score">1250</span></li>
+                        <li>Tetris大师 <span class="score">980</span></li>
+                        <li>方块爱好者 <span class="score">760</span></li>
+                        <li>新手玩家 <span class="score">320</span></li>
+                        <li>俄罗斯方块高手 <span class="score">1540</span></li>
+                    </ul>
+                </div>
+
+                <div class="panel">
+                    <h3><i class="fas fa-comments"></i> 游戏聊天</h3>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message">
+                            <span class="user">系统:</span>
+                            <span class="text">欢迎来到俄罗斯方块在线对战！</span>
+                        </div>
+                        <div class="message">
+                            <span class="user">Tetris大师:</span>
+                            <span class="text">有人要创建房间吗？</span>
+                        </div>
+                        <div class="message">
+                            <span class="user">方块爱好者:</span>
+                            <span class="text">我刚刚打破了记录！</span>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" placeholder="输入消息..." id="chatInput">
+                        <button class="btn" id="sendMsgBtn"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3><i class="fas fa-info-circle"></i> 游戏信息</h3>
+                    <div class="game-info">
+                        <div class="info-panel">
+                            <h3>得分</h3>
+                            <div class="score" id="score">0</div>
+                        </div>
+
+                        <div class="info-panel">
+                            <h3>等级</h3>
+                            <div class="level" id="level">1</div>
+                        </div>
+
+                        <div class="info-panel">
+                            <h3>消除行数</h3>
+                            <div class="lines" id="lines">0</div>
+                        </div>
+                    </div>
+
+                    <div class="info-panel">
+                        <h3>下一个方块</h3>
+                        <div class="next-piece" id="nextPiece"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录模态框 -->
+    <div class="modal" id="loginModal" style="display: none;">
+        <div class="modal-content">
+            <h2><i class="fas fa-user"></i> 用户登录</h2>
+            <div class="form-group">
+                <label for="loginUsername">用户名</label>
+                <input type="text" id="loginUsername" placeholder="输入用户名">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">密码</label>
+                <input type="password" id="loginPassword" placeholder="输入密码">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="login()">登录</button>
+            <p style="text-align: center; margin-top: 15px;">
+                没有账号？ <a href="#" style="color: #4ecdc4;" onclick="showRegister()">立即注册</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- 注册模态框 -->
+    <div class="modal" id="registerModal" style="display: none;">
+        <div class="modal-content">
+            <h2><i class="fas fa-user-plus"></i> 用户注册</h2>
+            <div class="form-group">
+                <label for="registerUsername">用户名</label>
+                <input type="text" id="registerUsername" placeholder="创建用户名">
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">密码</label>
+                <input type="password" id="registerPassword" placeholder="创建密码">
+            </div>
+            <div class="form-group">
+                <label for="registerEmail">电子邮箱</label>
+                <input type="email" id="registerEmail" placeholder="输入电子邮箱">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="register()">注册</button>
+            <p style="text-align: center; margin-top: 15px;">
+                已有账号？ <a href="#" style="color: #4ecdc4;" onclick="showLogin()">立即登录</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 游戏配置
+        const BOARD_WIDTH = 10;
+        const BOARD_HEIGHT = 20;
+        const BLOCK_SIZE = 30;
+
+        // 模拟WebSocket连接
+        const mockWebSocket = {
+            send: function(data) {
+                console.log("发送消息:", data);
+                // 模拟收到消息
+                setTimeout(() => {
+                    if (data.type === 'login' && data.username) {
+                        document.getElementById('username').textContent = data.username;
+                        hideModal('loginModal');
+                    }
+                }, 500);
+            }
+        };
+
+        // 显示模态框
+        function showModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        // 隐藏模态框
+        function hideModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // 显示登录框
+        function showLogin() {
+            hideModal('registerModal');
+            showModal('loginModal');
+        }
+
+        // 显示注册框
+        function showRegister() {
+            hideModal('loginModal');
+            showModal('registerModal');
+        }
+
+        // 登录功能
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (username && password) {
+                mockWebSocket.send({
+                    type: 'login',
+                    username: username,
+                    password: password
+                });
+            } else {
+                alert('请输入用户名和密码');
+            }
+        }
+
+        // 注册功能
+        function register() {
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const email = document.getElementById('registerEmail').value;
+            
+            if (username && password && email) {
+                mockWebSocket.send({
+                    type: 'register',
+                    username: username,
+                    password: password,
+                    email: email
+                });
+                alert('注册成功！请登录。');
+                showLogin();
+            } else {
+                alert('请填写所有字段');
+            }
+        }
+
+        // 显示创建房间
+        function showCreateRoom() {
+            alert('创建房间功能即将开放！');
+        }
+
+        // 显示加入房间
+        function showJoinRoom() {
+            alert('加入房间功能即将开放！');
+        }
+
+        // 初始化按钮事件
+        document.getElementById('loginBtn').addEventListener('click', showLogin);
+        document.getElementById('sendMsgBtn').addEventListener('click', function() {
+            const input = document.getElementById('chatInput');
+            if (input.value) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+                messageDiv.innerHTML = `<span class="user">${document.getElementById('username').textContent}:</span> <span class="text">${input.value}</span>`;
+                document.getElementById('chatMessages').appendChild(messageDiv);
+                document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+                input.value = '';
+            }
+        });
+
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('sendMsgBtn').click();
+            }
+        });
+
+        // 游戏逻辑（简化版）
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            // 这里应该初始化游戏状态
+            document.getElementById('score').textContent = '0';
+            document.getElementById('level').textContent = '1';
+            document.getElementById('lines').textContent = '0';
+            
+            // 模拟游戏进行
+            setTimeout(() => {
+                document.getElementById('score').textContent = '350';
+                document.getElementById('level').textContent = '2';
+                document.getElementById('lines').textContent = '5';
+            }, 2000);
+        }
+
+        function restartGame() {
+            document.getElementById('gameOver').style.display = 'none';
+            startGame();
+        }
+
+        function exitToMenu() {
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        }
+
+        // 模拟游戏结束
+        setTimeout(() => {
+            // document.getElementById('gameOver').style.display = 'block';
+            // document.getElementById('finalScore').textContent = '1250';
+        }, 5000);
+    </script>
+</body>
+</html>
